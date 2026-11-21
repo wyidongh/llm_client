@@ -96,9 +96,36 @@ def list_providers():
     return sorted(PROVIDERS)
 
 
+_DOTENV_LOADED = False
+
+
+def load_dotenv(path: str = ".env", override: bool = False) -> None:
+    """读取 .env（KEY=value）到环境变量。空值跳过；默认不覆盖已有的环境变量。"""
+    if not os.path.isfile(path):
+        return
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            if key.startswith("export "):
+                key = key[7:].strip()
+            value = value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                value = value[1:-1]
+            if key and value and (override or not os.getenv(key)):
+                os.environ[key] = value
+
+
 def _env(env_key: Any) -> Optional[str]:
+    global _DOTENV_LOADED
     if not env_key:
         return None
+    if not _DOTENV_LOADED:
+        _DOTENV_LOADED = True
+        load_dotenv()
     for k in (env_key if isinstance(env_key, (list, tuple)) else [env_key]):
         if os.getenv(k):
             return os.getenv(k)

@@ -23,6 +23,18 @@ class RequestSpec:
     body: Dict[str, Any]
     query: Dict[str, str] = field(default_factory=dict)
 
+    def __repr__(self) -> str:
+        # 打印/日志时隐藏鉴权头，避免泄露 api key
+        return (f"RequestSpec(url={self.url!r}, headers={_redact(self.headers)!r}, "
+                f"query={self.query!r}, body_keys={list(self.body)!r})")
+
+
+_SENSITIVE_HEADERS = {"authorization", "x-api-key", "api-key", "x-goog-api-key"}
+
+
+def _redact(headers: Dict[str, str]) -> Dict[str, str]:
+    return {k: ("***" if k.lower() in _SENSITIVE_HEADERS else v) for k, v in headers.items()}
+
 
 class StreamAccumulator:
     """消费 SSE 事件，产出增量 StreamChunk，并在结束时组装完整 ChatResponse。"""

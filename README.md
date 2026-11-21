@@ -89,6 +89,8 @@ while r.tool_calls:
 
 ## 厂商
 
+API key 可以写在项目根目录（运行时的当前目录）的 `.env` 文件里，格式为 `DEEPSEEK_API_KEY=sk-...`，留空表示不使用。首次创建客户端时会自动读取。系统环境变量的优先级高于 `.env`。`.env` 已加入 `.gitignore`，不会被提交。
+
 ```python
 from llm_client import list_providers
 list_providers()
